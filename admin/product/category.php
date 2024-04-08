@@ -1,5 +1,6 @@
 <?php
 include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/header.php';
+
 $sql = "SELECT * FROM category where step = 1";
 $result = $mysqli->query($sql);
 while ($row = $result->fetch_object()) {
@@ -9,40 +10,40 @@ while ($row = $result->fetch_object()) {
 ?>
 
 <div class="container">
-  <form action="">
-    <div class="category row">
 
-      <div class="col-md-4">
+  <div class="category row">
 
-        <select class="form-select" aria-label="대분류" id="cate1">
-          <option selected>대분류</option>
-          <?php
-          foreach ($cate1 as $c1) {
-          ?>
+    <div class="col-md-4">
 
-            <option value="<?= $c1->code; ?>"><?= $c1->name; ?></option>
+      <select class="form-select" aria-label="대분류" id="cate1">
+        <option selected>대분류</option>
+        <?php
+        foreach ($cate1 as $c1) {
+        ?>
 
-          <?php
-          }
-          ?>
+          <option value="<?= $c1->code; ?>"><?= $c1->name; ?></option>
 
-        </select>
-      </div>
-      <div class="col-md-4">
+        <?php
+        }
+        ?>
 
-        <select class="form-select" aria-label="중분류" id="cate2">
-
-        </select>
-      </div>
-      <div class="col-md-4">
-
-        <select class="form-select" aria-label="소분류" id="cate3">
-
-        </select>
-      </div>
-
+      </select>
     </div>
-  </form>
+    <div class="col-md-4">
+
+      <select class="form-select" aria-label="중분류" id="cate2">
+
+      </select>
+    </div>
+    <div class="col-md-4">
+
+      <select class="form-select" aria-label="소분류" id="cate3">
+
+      </select>
+    </div>
+
+  </div>
+
   <div class="buttons mt-3">
     <!-- 대분류 등록 버튼 -->
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cate1Modal">
@@ -86,12 +87,26 @@ while ($row = $result->fetch_object()) {
             <h1 class="modal-title fs-5" id="cate2ModalLabel">중분류 등록</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body row">
-            <div class="col">
-              <input type="text" class="form-control" id="code2" name="code2" placeholder="코드명 입력">
+          <div class="modal-body">
+            <div class="row">
+              <select class="form-select" aria-label="대분류" id="pcode2">
+                <option disabled>대분류를 선택해주세요</option>
+                <?php
+                foreach ($cate1 as $c1) {
+                ?>
+                  <option value="<?= $c1->code; ?>"><?= $c1->name; ?></option>
+                <?php
+                }
+                ?>
+              </select>
             </div>
-            <div class="col">
-              <input type="text" class="form-control" id="name2" name="name2" placeholder="중분류명 입력">
+            <div class="row mt-3">
+              <div class="col">
+                <input type="text" class="form-control" id="code2" name="code2" placeholder="코드명 입력">
+              </div>
+              <div class="col">
+                <input type="text" class="form-control" id="name2" name="name2" placeholder="중분류명 입력">
+              </div>
             </div>
           </div>
           <div class="modal-footer">
@@ -115,12 +130,34 @@ while ($row = $result->fetch_object()) {
             <h1 class="modal-title fs-5" id="cate3ModalLabel">소분류 등록</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body row">
-            <div class="col">
-              <input type="text" class="form-control" id="code1" name="code1" placeholder="코드명 입력">
+          <div class="modal-body">
+
+            <div class="row">
+              <div class="col">
+                <select class="form-select" aria-label="대분류" id="pcode2_1">
+                  <option selected disabled>대분류를 선택해주세요</option>
+                  <?php
+                  foreach ($cate1 as $c1) {
+                  ?>
+                    <option value="<?= $c1->code; ?>"><?= $c1->name; ?></option>
+                  <?php
+                  }
+                  ?>
+                </select>
+              </div>
+              <div class="col">
+                <select class="form-select" aria-label="중분류" id="pcode3">
+                  <option selected disabled>대분류를 먼저 선택해주세요</option>
+                </select>
+              </div>
             </div>
-            <div class="col">
-              <input type="text" class="form-control" id="name1" name="name1" placeholder="대분류명 입력">
+            <div class="row mt-3">
+              <div class="col">
+                <input type="text" class="form-control" id="code3" name="code3" placeholder="코드명 입력">
+              </div>
+              <div class="col">
+                <input type="text" class="form-control" id="name3" name="name3" placeholder="대분류명 입력">
+              </div>
             </div>
           </div>
           <div class="modal-footer">
@@ -134,46 +171,8 @@ while ($row = $result->fetch_object()) {
 
 </div><!-- //container -->
 
+<script src="/pinkping/admin/js/makeoption.js"></script>
 <script>
-  $('#cate1').change(function() {
-    makeOption($(this), 2, '중분류', $('#cate2'));
-  });
-  $('#cate2').change(function() {
-    makeOption($(this), 3, '소분류', $('#cate3'));
-  });
-  $('#cate3').change(function() {
-
-  });
-
-  async function makeOption(e, step, category, target) {
-    let cate = e.val();
-    let data = new URLSearchParams({
-      cate: cate,
-      step: step,
-      category: category
-    });
-
-    try {
-      const response = await fetch('printOption.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: data
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const resultText = await response.text();
-
-      target.html(resultText);
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  }
-
   let categorySubmitBtn = $(".modal button[type='submit']");
 
   categorySubmitBtn.click(function() {
@@ -184,10 +183,25 @@ while ($row = $result->fetch_object()) {
   function save_category(step) {
     let code = $(`#code${step}`).val();
     let name = $(`#name${step}`).val();
+    let pcode = $(`#pcode${step} option:selected`).val();
+
+    if (step > 1 && !pcode) {
+      alert('부모 분류를 선택하세요');
+      return;
+    }
+    if (!code) {
+      alert('분류코드를 입력하세요');
+      return;
+    }
+    if (!name) {
+      alert('분류명을 입력하세요');
+      return;
+    }
 
     let data = {
       name: name,
       code: code,
+      pcode: pcode,
       step: step
     }
     $.ajax({
@@ -207,9 +221,14 @@ while ($row = $result->fetch_object()) {
         } else if (data.result === '-1') {
           alert('코드가 중복됩니다.');
           location.reload(); //강제 새로고침
+        } else if (data.result === 'member') {
+          alert('관리자가 아닙니다.');
+          location.href = '/pinkping/admin/login.php';
         } else {
           alert('등록 실패');
+          location.reload(); // 새로고침
         }
+
       }
     }); //ajax
   }
