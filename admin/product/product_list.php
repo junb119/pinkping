@@ -34,24 +34,45 @@ if($isrecom){
   $search_where .= " and isrecom = 1";
 }
 if($sale_end_date){
-  $search_where .= " and sale_end_date >= CAST('{$sale_end_date}' AS datetime )";
+  $search_where .= " and sale_end_date >=  CAST('{$sale_end_date}' AS datetime)";
 }
 if($search_keyword){
   $search_where .= " and (name LIKE '%{$search_keyword}%' or content LIKE '%{$search_keyword}%')";
 }
+$paginationTarget = 'products';
+include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/admin/inc/pagination.php';
 
+//페이지네이션 시작
+$cntsql = "SELECT COUNT(*) AS cnt FROM products where 1=1"; 
+$cntsql .= $search_where;
+$cntresult = $mysqli->query($cntsql);
+$cntrow = $cntresult->fetch_object();
+$count = $cntrow -> cnt; //검색 개수 출력
+
+$pageNumber = $_GET['pageNumber'] ?? 1;
+$pageCount = $_GET['pageCount'] ?? 5;
+$startLimit = ($pageNumber -1)*$pageCount;
+$endLimit = $pageCount ;
+$firstPageNumber = $_GET['firstPageNumber'] ?? 0;
+
+$block_ct = 5;  //12345, 678910
+$block_num = ceil($pageNumber/$block_ct);  //65개수 1/5 0.2 1
+$block_start = (($block_num - 1) * $block_ct) + 1; 
+$block_end = $block_start + $block_ct - 1;
+
+$total_page = ceil($count / $pageCount); 
+if($block_end > $total_page) $block_end = $total_page;
+
+$total_block = ceil($total_page/$block_ct); 
 
 $sql = "SELECT * FROM products where 1=1"; //모든 상품 조회 쿼리
 $sql .= $search_where;
 $order = " order by pid desc";
 $sql .= $order;
-$result = $mysqli->query($sql);
+$limit = " LIMIT $startLimit, $endLimit";
+$sql .= $limit;
 
-$cntsql = "SELECT COUNT(*) AS cnt FROM products where 1=1"; //모든 상품 조회 쿼리
-$cntsql .= $search_where;
-$cntresult = $mysqli->query($cntsql);
-$cntrow = $cntresult->fetch_object();
-$count = $cntrow -> cnt;
+$result = $mysqli->query($sql);
 
 while ($rs = $result->fetch_object()) {
   $rsArr[] = $rs;
@@ -117,9 +138,9 @@ while ($rs = $result->fetch_object()) {
       </div>
     </div>
   </form>
-  <hr>
+  <hr>  
   <div>
-    검색결과 : <?= $count; ?>
+    검색결과: <?= $count;  ?>
   </div>
   <hr>
   <form action="plist_update.php">
@@ -147,40 +168,40 @@ while ($rs = $result->fetch_object()) {
             <tr>
               <th scope="row">
                 <input type="hidden" name="pid[]" value="<?= $item->pid ?>">
-                <img src="<?= $item->thumbnail ?>" alt="" width="150">
+                <img src="<?= $item->thumbnail ?>" alt="" width="100">
               </th>
               <td><?= $item->name ?></td>
               <td><?= $item->price ?></td>
               <td><?= $item->cnt ?></td>
               <td>
-                <input class="form-check-input" type="checkbox" value="<?= $item->ismain ?>"  
+                <input class="form-check-input" type="checkbox" value="1"  
                   <?php 
                   if($item->ismain){ echo "checked";} 
                   ?>
-                id="ismain[<?= $item->pid ?>]" name="ismain <?= $item->ismain ?>" >
+                id="ismain[<?= $item->pid ?>]" name="ismain[<?= $item->pid ?>]">
               </td>
               <td>
-                <input class="form-check-input" type="checkbox" value="<?= $item->isnew ?>" id="isnew[<?= $item->pid ?>]" name="isnew"
+                <input class="form-check-input" type="checkbox" value="1" id="isnew[<?= $item->pid ?>]" name="isnew[<?= $item->pid ?>]"
                 <?php 
                   if($item->isnew){ echo "checked";} 
                   ?>
                 >
               </td>
               <td>
-                <input class="form-check-input" type="checkbox" value="<?= $item->isbest ?>"  id="isbest[<?= $item->pid ?>]" name="isbest"
+                <input class="form-check-input" type="checkbox" value="1" id="isbest[<?= $item->pid ?>]" name="isbest[<?= $item->pid ?>]"
                 <?php 
                   if($item->isbest){ echo "checked";} 
                   ?>
                 >
               </td>
               <td>
-                <input class="form-check-input" type="checkbox" value="<?= $item->isrecom ?>"  id="isrecom[<?= $item->pid ?>]" name="isrecom"
+                <input class="form-check-input" type="checkbox" value="1" id="isrecom[<?= $item->pid ?>]" name="isrecom[<?= $item->pid ?>]"
                 <?php if($item->isrecom){ echo "checked";} ?>
                 >             
-             
+            
               </td>
               <td>
-                <select class="form-select" aria-label="판매상태" name="status[<?= $item->pid ?>]" id="status">
+                <select class="form-select" aria-label="판매상태" name="status[<?= $item->pid ?>]" id="status[<?= $item->pid ?>]">
                   <option value="-1"<?php if($item->status == -1){ echo "selected";} ?>>판매중지</option>
                   <option value="0" <?php if($item->status == 0){ echo "selected";} ?>>대기</option>
                   <option value="1" <?php if($item->status == 1){ echo "selected";} ?>>판매중</option>
@@ -193,10 +214,43 @@ while ($rs = $result->fetch_object()) {
           }
         }
         ?>
-  
+
       </tbody>
     </table>
-    <div class="text-end"><button class="btn btn-primary">일괄 수정</button></div>
+    <div class="text-end">
+      <button class="btn btn-primary">일괄수정</button>
+    </div>   
+
+    <div class="d-flex justify-content-center">
+      <ul class="pagination">
+         <?php
+        if($pageNumber > 1){
+          echo "<li class=\"page-item\"><a href=\"product_list.php?pageNumber=1\" class=\"page-link\" >처음</a></li>";
+          //이전
+          if($block_num > 1){
+            $prev = 1 + ($block_num - 2) * $block_ct;
+            echo "<li class=\"page-item\"><a href=\"product_list.php?pageNumber=$prev\" class=\"page-link\">이전</a></li>";
+          }
+        }
+       
+          for($i=$block_start;$i<=$block_end;$i++){
+            if($i == $pageNumber){
+              echo "<li class=\"page-item active\"><a href=\"product_list.php?pageNumber=$i\" class=\"page-link\">$i</a></li>";
+            }else{
+              echo "<li class=\"page-item\"><a href=\"product_list.php?pageNumber=$i\" class=\"page-link\">$i</a></li>";
+            }            
+          }  
+
+          if($pageNumber < $total_page){
+            if($total_block > $block_num){
+              $next = $block_num * $block_ct + 1;
+              echo "<li class=\"page-item\"><a href=\"product_list.php?pageNumber=$next\" class=\"page-item\">다음</a></li>";
+            }
+            echo "<li class=\"page-item\"><a href=\"product_list.php?pageNumber=$total_page\" class=\"page-link\">마지막</a></li>";
+          }        
+        ?>
+      </ul>
+    </div>    
   </form>
   <a href="product_up.php" class="btn btn-primary">상품 등록</a>
 </div>
