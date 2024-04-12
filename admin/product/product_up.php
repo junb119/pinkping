@@ -163,7 +163,7 @@ while ($row = $result->fetch_object()) {
     function save() {
       let markupStr = $('#summernote').summernote('code');
       let contents = encodeURIComponent(markupStr);
-      $('#contents').val(contents);
+      $('#contents').val(contents)
     }
 
     $('#summernote').summernote({
