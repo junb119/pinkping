@@ -45,10 +45,13 @@ $sql = "SELECT * FROM products where 1=1"; //모든 상품 조회 쿼리
 $sql .= $search_where;
 $order = " order by pid desc";
 $sql .= $order;
-
-echo $sql;
-
 $result = $mysqli->query($sql);
+
+$cntsql = "SELECT COUNT(*) AS cnt FROM products where 1=1"; //모든 상품 조회 쿼리
+$cntsql .= $search_where;
+$cntresult = $mysqli->query($cntsql);
+$cntrow = $cntresult->fetch_object();
+$count = $cntrow -> cnt;
 
 while ($rs = $result->fetch_object()) {
   $rsArr[] = $rs;
@@ -114,76 +117,87 @@ while ($rs = $result->fetch_object()) {
       </div>
     </div>
   </form>
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col">썸네일</th>
-        <th scope="col">제품명</th>
-        <th scope="col">가격</th>
-        <th scope="col">재고</th>
-        <th scope="col">메인</th>
-        <th scope="col">신제품</th>
-        <th scope="col">베스트</th>
-        <th scope="col">추천</th>
-        <th scope="col">상태</th>
-        <th scope="col">보기</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php
-      if (isset($rsArr)) {
-        foreach ($rsArr as $item) {
-      ?>
-          <tr>
-            <th scope="row">
-              <img src="<?= $item->thumbnail ?>" alt="" width="150">
-            </th>
-            <td><?= $item->name ?></td>
-            <td><?= $item->price ?></td>
-            <td><?= $item->cnt ?></td>
-            <td>
-              <input class="form-check-input" type="checkbox" value="<?= $item->ismain ?>"  
+  <hr>
+  <div>
+    검색결과 : <?= $count; ?>
+  </div>
+  <hr>
+  <form action="plist_update.php">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">썸네일</th>
+          <th scope="col">제품명</th>
+          <th scope="col">가격</th>
+          <th scope="col">재고</th>
+          <th scope="col">메인</th>
+          <th scope="col">신제품</th>
+          <th scope="col">베스트</th>
+          <th scope="col">추천</th>
+          <th scope="col">상태</th>
+          <th scope="col">보기</th>
+          <th scope="col">수정</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php
+        if (isset($rsArr)) {
+          foreach ($rsArr as $item) {
+        ?>
+            <tr>
+              <th scope="row">
+                <input type="hidden" name="pid[]" value="<?= $item->pid ?>">
+                <img src="<?= $item->thumbnail ?>" alt="" width="150">
+              </th>
+              <td><?= $item->name ?></td>
+              <td><?= $item->price ?></td>
+              <td><?= $item->cnt ?></td>
+              <td>
+                <input class="form-check-input" type="checkbox" value="<?= $item->ismain ?>"  
+                  <?php 
+                  if($item->ismain){ echo "checked";} 
+                  ?>
+                id="ismain[<?= $item->pid ?>]" name="ismain <?= $item->ismain ?>" >
+              </td>
+              <td>
+                <input class="form-check-input" type="checkbox" value="<?= $item->isnew ?>" id="isnew[<?= $item->pid ?>]" name="isnew"
                 <?php 
-                if($item->ismain){ echo "checked";} 
-                ?>
-              id="ismain" name="ismain">
-            </td>
-            <td>
-              <input class="form-check-input" type="checkbox" value="<?= $item->isnew ?>" id="isnew" name="isnew"
-              <?php 
-                if($item->isnew){ echo "checked";} 
-                ?>
-              >
-            </td>
-            <td>
-              <input class="form-check-input" type="checkbox" value="<?= $item->isbest ?>"  id="isbest" name="isbest"
-              <?php 
-                if($item->isbest){ echo "checked";} 
-                ?>
-              >
-            </td>
-            <td>
-              <input class="form-check-input" type="checkbox" value="<?= $item->isrecom ?>"  id="isrecom" name="isrecom"
-              <?php if($item->isrecom){ echo "checked";} ?>
-              >             
-           
-            </td>
-            <td>
-              <select class="form-select" aria-label="판매상태" name="status" id="status">
-                <option value="-1"<?php if($item->status == -1){ echo "selected";} ?>>판매중지</option>
-                <option value="0" <?php if($item->status == 0){ echo "selected";} ?>>대기</option>
-                <option value="1" <?php if($item->status == 1){ echo "selected";} ?>>판매중</option>
-              </select>
-            </td>
-            <td><a href="product_view.php?pid=<?= $item->pid; ?>" class="btn btn-info">보기</a></td>
-          </tr>
-      <?php
+                  if($item->isnew){ echo "checked";} 
+                  ?>
+                >
+              </td>
+              <td>
+                <input class="form-check-input" type="checkbox" value="<?= $item->isbest ?>"  id="isbest[<?= $item->pid ?>]" name="isbest"
+                <?php 
+                  if($item->isbest){ echo "checked";} 
+                  ?>
+                >
+              </td>
+              <td>
+                <input class="form-check-input" type="checkbox" value="<?= $item->isrecom ?>"  id="isrecom[<?= $item->pid ?>]" name="isrecom"
+                <?php if($item->isrecom){ echo "checked";} ?>
+                >             
+             
+              </td>
+              <td>
+                <select class="form-select" aria-label="판매상태" name="status[<?= $item->pid ?>]" id="status">
+                  <option value="-1"<?php if($item->status == -1){ echo "selected";} ?>>판매중지</option>
+                  <option value="0" <?php if($item->status == 0){ echo "selected";} ?>>대기</option>
+                  <option value="1" <?php if($item->status == 1){ echo "selected";} ?>>판매중</option>
+                </select>
+              </td>
+              <td><a href="product_view.php?pid=<?= $item->pid; ?>" class="btn btn-info">보기</a></td>
+              <td><a href="product_edit.php?pid=<?= $item->pid; ?>" class="btn btn-info">수정</a></td>
+            </tr>
+        <?php
+          }
         }
-      }
-      ?>
-
-    </tbody>
-  </table>
+        ?>
+  
+      </tbody>
+    </table>
+    <div class="text-end"><button class="btn btn-primary">일괄 수정</button></div>
+  </form>
   <a href="product_up.php" class="btn btn-primary">상품 등록</a>
 </div>
 

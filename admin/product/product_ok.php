@@ -31,6 +31,7 @@ $sale_end_date = $_POST['sale_end_date'];
 $status = 0;
 $delivery_fee = $_POST['delivery_fee'] ?? 0;
 $addedImg_id = rtrim($_POST['product_image'], ',');
+
 // 파일 사이즈 검사
 if ($_FILES['thumbnail']['size'] > 10240000) {
   $result_data = array('result'=>'size');
@@ -85,9 +86,11 @@ now(),
 $result = $mysqli->query($sql);
 $pid = $mysqli->insert_id;
 
-if ($result) {
-  $sql = "UPDATE product_image_table SET pid = {$pid} WHERE imgid IN ({$addedImg_id})";
-  $result = $mysqli->query($sql);
+if ($result) { // 상품등록하면
+  if (strlen($addedImg_id)) {
+    $sql = "UPDATE product_image_table SET pid = {$pid} WHERE imgid IN ({$addedImg_id})";
+    $result = $mysqli->query($sql);
+  }
   echo "<script>alert('상품 등록 완료');location.href ='/pinkping/admin/product/product_list.php';</script>";
 
 } else {
