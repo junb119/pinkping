@@ -60,7 +60,7 @@ while ($rs = $result->fetch_object()) {
             <td><?=$value->coupon_type?></td>
             <td><?=$value->coupon_price?></td>
             <td><?=$value->coupon_ratio?></td>
-            <td><?=$value->use_min_price?>< /td>
+            <td><?=$value->use_min_price?></td>
             <td><?=$value->max_value?></td>
             <td><?=$value->userid?></td>
             <td><?=$value->status?></td>
@@ -70,7 +70,7 @@ while ($rs = $result->fetch_object()) {
         ?>
       </tbody>
   </table>
-  <a href="coupon.up.php" class="btn btn-primary">쿠폰 등록</a>
+  <a href="coupon_up.php" class="btn btn-primary">쿠폰 등록</a>
   </form>
 </div>
 
