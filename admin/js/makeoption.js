@@ -1,19 +1,20 @@
-$('#cate1').change(function () {
+$('#cate1').change(function() {
   makeOption($(this), 2, '중분류', $('#cate2'));
 });
-$('#cate2').change(function () {
+$('#cate2').change(function() {
   makeOption($(this), 3, '소분류', $('#cate3'));
 });
-$('#pcode2_1').change(function () {
+$('#pcode2_1').change(function() {
   makeOption($(this), 2, '중분류', $('#pcode3'));
 });
+
 
 async function makeOption(e, step, category, target) {
   let cate = e.val();
   let data = new URLSearchParams({
     cate: cate,
     step: step,
-    category: category,
+    category: category
   });
   console.log(data.toString());
 
@@ -21,9 +22,9 @@ async function makeOption(e, step, category, target) {
     const response = await fetch('printOption.php', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: data,
+      body: data
     });
 
     if (!response.ok) {
