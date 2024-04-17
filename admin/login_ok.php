@@ -17,9 +17,10 @@ if ($rs) {
   $sql = "UPDATE admins set last_login=now() where idx = {$rs->idx}";
   $result = $mysqli->query($sql);
   $_SESSION['AUID'] = $rs->userid;
+  $_SESSION['AUNAME'] = $rs->username;
   echo "<script>
     alert('관리자님 반갑습니다');
-    location.href = '/pinkping/admin/product/product_list.php';
+    location.href = '/pinkping/admin/index.php';
   </script>";
   exit();
 } else {

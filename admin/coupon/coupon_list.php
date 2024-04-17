@@ -50,20 +50,28 @@ while ($rs = $result->fetch_object()) {
       <tbody>
         <?php
         if (isset($rsArr)) {
-          foreach($rsArr as $value) {
+          foreach($rsArr as $item) {
         ?>
           <tr>
             <td>
-              <img src="<?=$value->coupon_image?>" alt="">  
+              <img src="<?=$item->coupon_image?>" alt="">  
             </td>
-            <td><?=$value->coupon_name?></td>
-            <td><?=$value->coupon_type?></td>
-            <td><?=$value->coupon_price?></td>
-            <td><?=$value->coupon_ratio?></td>
-            <td><?=$value->use_min_price?></td>
-            <td><?=$value->max_value?></td>
-            <td><?=$value->userid?></td>
-            <td><?=$value->status?></td>
+            <td><?=$item->coupon_name?></td>
+            <td><?=$item->coupon_type?></td>
+            <td><?=$item->coupon_price?></td>
+            <td><?=$item->coupon_ratio?></td>
+            <td><?=$item->use_min_price?></td>
+            <td><?=$item->max_value?></td>
+            <td><?=$item->userid?></td>
+            <td><?php 
+              if ($item->status == '1') {
+                echo '대기';
+              } else if ($item->status == '2') {
+                echo '사용';
+              } else {
+                echo '폐기';
+              }
+            ?></td>
           </tr>
         <?php
         }}
