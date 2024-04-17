@@ -216,8 +216,9 @@ while ($row = $result->fetch_object()) {
         $('#summernote').summernote('focus');
         return false;
       }
-      if(!$('#upfile').val()){
+      if(!$('#product_image_id').val()){
         alert('최소 하나의 추가 이미지를 등록하세요.');
+        return false;
       }
 
     }
