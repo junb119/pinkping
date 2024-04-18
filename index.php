@@ -1,5 +1,6 @@
 <?php
 session_start();
+$title = 'HOME';
 include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/head.php';
 
 
@@ -234,7 +235,7 @@ while($rs = $result->fetch_object()){
                         data-wow-delay="0.2s">
                         <!-- Product Image -->
                         <div class="product-img">
-                            <img src="<?= $item->thumbnail; ?>" alt="">
+                            <a href="product-details.php?pid=<?=$item->pid?>"><img src="<?= $item->thumbnail; ?>" alt=""></a>
                             <div class="product-quicview">
                                 <a href="#" data-toggle="modal" data-target="#quickview"><i class="ti-plus"></i></a>
                             </div>
@@ -242,7 +243,7 @@ while($rs = $result->fetch_object()){
                         <!-- Product Description -->
                         <div class="product-description">
                             <h4 class="product-price"><?= $item->price; ?></h4>
-                            <p><?= $item->name; ?></p>
+                            <a href="product-details.php?pid=<?=$item->pid?>"><p><?= $item->name; ?></p></a>
                             <!-- Add to Cart -->
                             <a href="#" class="add-to-cart-btn">ADD TO CART</a>
                         </div>
