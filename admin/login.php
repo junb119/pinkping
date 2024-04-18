@@ -2,11 +2,13 @@
 session_start();
 include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/header.php';
 
-
-if (isset($_SESSION['AUNAME'])) {
-  echo "<script>alert('이미 로그인 되어있습니다.');location.href='index.php'</script>";
+//관리자 검사
+if (isset($_SESSION['AUID'])) {
+  echo "<script>
+    alert('이미 로그인되어 있습니다.');
+    location.href='/pinkping/admin/index.php';
+  </script>";
 }
-
 ?>
 
 <div class="container">

@@ -169,7 +169,6 @@ if ($result) { //상품 등록 하면
                     image_url='{$upload_option_image[$x]}'        
                     WHERE pid={$pid} AND poid = {$poid_array[$x]}";
     
-        echo $optsql; // 쿼리문이 제대로 생성되었는지 확인하기 위한 코드
         $optresult = $mysqli->query($optsql); // 쿼리 실행
         $x++;
     }    

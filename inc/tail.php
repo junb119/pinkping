@@ -1,4 +1,3 @@
-
         <!-- ****** Footer Area Start ****** -->
         <footer class="footer_area">
             <div class="container">
