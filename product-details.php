@@ -26,18 +26,35 @@ if(isset($_COOKIE['recent_viewed'])) {  // 쿠키가 존재할 때 !false == tru
         if(count($rvcArr) >= 3){
             array_shift($rvcArr);
         }
+        array_push($rvcArr, $pid);
+        $rbcStr = json_encode($rvcArr);
+        setcookie('recent_viewed', $rbcStr, time()+86400, "/");   // 쿠키가 24시간 지속됨
     } 
+
+} else {
+    array_push($rvcArr, $pid);
+    $rbcStr = json_encode($rvcArr);
+    setcookie('recent_viewed', $rbcStr, time()+86400, "/");   // 쿠키가 24시간 지속됨
 }
-array_push($rvcArr, $pid);
-$rbcStr = json_encode($rvcArr);
-setcookie('recent_viewed', $rbcStr, time()+86400, "/");   // 쿠키가 24시간 지속됨
 
-// while( ){
-// }
+// 상품기본정보 조회 $sql1, $result1 $rs
+$sql1 ="SELECT * FROM products WHERE pid={$pid}";
+$result1 = $mysqli->query($sql1);
+$rs = $result1->fetch_object();
 
+// 추가이미지 조회 $sql2, $result2, $addedImgs
+$sql2 = "SELECT * FROM product_image_table WHERE pid={$pid}";
+$result2 = $mysqli->query($sql2);
+while ($rs2 = $result2->fetch_object()) {
+    $addedImgs[] = $rs2;
+}
 
-
-
+// 옵션 조회 $sql3, $result3, $optArr
+$sql3 = "SELECT * FROM product_options WHERE pid={$pid}";
+$result3 = $mysqli->query($sql3);
+while ($rs3 = $result3->fetch_object()) {
+    $optArr[] = $rs3;
+}
 ?>
         <!-- <<<<<<<<<<<<<<<<<<<< Breadcumb Area Start <<<<<<<<<<<<<<<<<<<< -->
         <div class="breadcumb_area">
@@ -67,37 +84,40 @@ setcookie('recent_viewed', $rbcStr, time()+86400, "/");   // 쿠키가 24시간 
                             <div id="product_details_slider" class="carousel slide" data-ride="carousel">
 
                                 <ol class="carousel-indicators">
-                                    <li class="active" data-target="#product_details_slider" data-slide-to="0" style="background-image: url(img/product-img/product-9.jpg);">
+                                    <li class="active" data-target="#product_details_slider" data-slide-to="0" style="background-image: url(<?= $rs->thumbnail?>);">
                                     </li>
-                                    <li data-target="#product_details_slider" data-slide-to="1" style="background-image: url(img/product-img/product-2.jpg);">
+                                    <?php
+                                    if (isset( $addedImgs)) {
+                                        $i=1;
+                                        foreach($addedImgs as $ai) {
+                                            
+                                    ?>
+                                    <li data-target="#product_details_slider" data-slide-to="<?=$i?>" style="background-image: url('/pinkping/admin/upload/<?= $ai->filename;?>');">
                                     </li>
-                                    <li data-target="#product_details_slider" data-slide-to="2" style="background-image: url(img/product-img/product-3.jpg);">
-                                    </li>
-                                    <li data-target="#product_details_slider" data-slide-to="3" style="background-image: url(img/product-img/product-4.jpg);">
-                                    </li>
-                                </ol>
+                                    <?php
+                                        $i++;
+                                        }}
+                                    ?>
+                                </ol> 
 
                                 <div class="carousel-inner">
                                     <div class="carousel-item active">
-                                        <a class="gallery_img" href="img/product-img/product-9.jpg">
-                                        <img class="d-block w-100" src="img/product-img/product-9.jpg" alt="First slide">
+                                        <a class="gallery_img" href="<?= $rs->thumbnail;?>">
+                                        <img class="d-block w-100" src="<?= $rs->thumbnail;?>" alt="First slide">
                                     </a>
                                     </div>
-                                    <div class="carousel-item">
-                                        <a class="gallery_img" href="img/product-img/product-2.jpg">
-                                        <img class="d-block w-100" src="img/product-img/product-2.jpg" alt="Second slide">
-                                    </a>
-                                    </div>
-                                    <div class="carousel-item">
-                                        <a class="gallery_img" href="img/product-img/product-3.jpg">
-                                        <img class="d-block w-100" src="img/product-img/product-3.jpg" alt="Third slide">
-                                    </a>
-                                    </div>
-                                    <div class="carousel-item">
-                                        <a class="gallery_img" href="img/product-img/product-4.jpg">
-                                        <img class="d-block w-100" src="img/product-img/product-4.jpg" alt="Fourth slide">
-                                    </a>
-                                    </div>
+                                    <?php
+                                    if (isset( $addedImgs)) {
+                                        foreach($addedImgs as $ai) {
+                                    ?>
+                                        <div class="carousel-item ">
+                                            <a class="gallery_img" href="/pinkping/admin/upload/<?=$ai->filename;?>">
+                                            <img class="d-block w-100" src="/pinkping/admin/upload/<?= $ai->filename;?>" alt="slide">
+                                        </a>
+                                        </div>
+                                    <?php
+                                        }}
+                                    ?>
                                 </div>
                             </div>
                         </div>
@@ -106,9 +126,9 @@ setcookie('recent_viewed', $rbcStr, time()+86400, "/");   // 쿠키가 24시간 
                     <div class="col-12 col-md-6">
                         <div class="single_product_desc">
 
-                            <h4 class="title"><a href="#">Long Yellow Dress</a></h4>
+                            <h4 class="title"><a href="#"><?=$rs->name?></a></h4>
 
-                            <h4 class="price">$ 39.99</h4>
+                            <h4 class="price"><?=$rs->price?></h4>
 
                             <p class="available">Available: <span class="text-muted">In Stock</span></p>
 
@@ -121,16 +141,43 @@ setcookie('recent_viewed', $rbcStr, time()+86400, "/");   // 쿠키가 24시간 
                             </div>
 
                             <div class="widget size mb-50">
-                                <h6 class="widget-title">Size</h6>
+                                <h6 class="widget-title"><?php
+                                if(isset($optArr[0])){
+                                    echo $optArr[0]->cate;
+                                }
+                                ?>
+                                </h6>
                                 <div class="widget-desc">
-                                    <ul>
-                                        <li><a href="#">32</a></li>
-                                        <li><a href="#">34</a></li>
-                                        <li><a href="#">36</a></li>
-                                        <li><a href="#">38</a></li>
-                                        <li><a href="#">40</a></li>
-                                        <li><a href="#">42</a></li>
-                                    </ul>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>옵션명</th>
+                                                <th>재고</th>
+                                                <th>가격</th>
+                                                <th>이미지</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                                if(isset($optArr)) {
+                                                    foreach($optArr as $oa){
+                                                    
+                                            ?>
+
+                                            <tr>
+                                                <td><?=$oa->cate?></td>
+                                                <td><?=$oa->option_cnt?></td>
+                                                <td><?=$oa->option_price?></td>
+                                                <td>
+                                                    <img src="<?=$oa->image_url?>" alt="">
+                                                </td>
+                                            </tr>
+                                            <?php
+                                                }
+                                            }
+                                            ?>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
 
@@ -154,9 +201,7 @@ setcookie('recent_viewed', $rbcStr, time()+86400, "/");   // 쿠키가 24시간 
 
                                     <div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne" data-parent="#accordion">
                                         <div class="card-body">
-                                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pharetra tempor so dales. Phasellus sagittis auctor gravida. Integ er bibendum sodales arcu id te mpus. Ut consectetur lacus.</p>
-                                            <p>Approx length 66cm/26" (Based on a UK size 8 sample) Mixed fibres</p>
-                                            <p>The Model wears a UK size 8/ EU size 36/ US size 4 and her height is 5'8"</p>
+                                            <?=$rs->content?>
                                         </div>
                                     </div>
                                 </div>
