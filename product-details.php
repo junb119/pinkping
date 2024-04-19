@@ -1,4 +1,5 @@
 <?php
+
 ob_start(); //output buffering start
 /*
 ob_start()
@@ -11,31 +12,52 @@ ob_start()
 session_start();
 $title = 'Product Detail';
 include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/head.php';
-
+$ssid = session_id();
+// echo $ssid;
 // setcookie('recent_viewed', '17,15', time()+86400);   // 쿠키가 24시간 지속됨
 // print_r(json_encode($_COOKIE['recent_viewed']));
 // print_r(json_decode($_COOKIE['recent_viewed']));
 
 
-$pid = $_GET['pid'];
-$rvcArr=[];
-if(isset($_COOKIE['recent_viewed'])) {  // 쿠키가 존재할 때 !false == true
-    $rvcArr = json_decode($_COOKIE['recent_viewed']);  // string -> array
-    // $rvcArr = explode(",", $rvc);
-    if (!in_array($pid, $rvcArr)) { // 이미 본 상품이 아니라면
-        if(count($rvcArr) >= 3){
-            array_shift($rvcArr);
-        }
-        array_push($rvcArr, $pid);
-        $rbcStr = json_encode($rvcArr);
-        setcookie('recent_viewed', $rbcStr, time()+86400, "/");   // 쿠키가 24시간 지속됨
-    } 
+// $pid = $_GET['pid'];
+// $rvcArr=[];
+// if(isset($_COOKIE['recent_viewed'])) {  // 쿠키가 존재할 때 !false == true
+//     $rvcArr = json_decode($_COOKIE['recent_viewed']);  // string -> array
+//     // $rvcArr = explode(",", $rvc);
+//     if (!in_array($pid, $rvcArr)) { // 이미 본 상품이 아니라면
+//         if(count($rvcArr) >= 3){
+//             array_shift($rvcArr);
+//         }
+//         array_push($rvcArr, $pid);
+//         $rbcStr = json_encode($rvcArr);
+//         setcookie('recent_viewed', $rbcStr, time()+86400, "/");   // 쿠키가 24시간 지속됨
+//     } 
 
-} else {
-    array_push($rvcArr, $pid);
-    $rbcStr = json_encode($rvcArr);
-    setcookie('recent_viewed', $rbcStr, time()+86400, "/");   // 쿠키가 24시간 지속됨
+// } else {
+//     array_push($rvcArr, $pid);
+//     $rbcStr = json_encode($rvcArr);
+//     setcookie('recent_viewed', $rbcStr, time()+86400, "/");   // 쿠키가 24시간 지속됨
+// }
+$pid = $_GET['pid'];
+$recentViewed = [];
+
+// 쿠키가 존재하면 디코딩하여 배열로 변환
+if (isset($_COOKIE['recent_viewed'])) {
+    $recentViewed = json_decode($_COOKIE['recent_viewed'], true);
 }
+
+// 최근 본 상품 ID가 배열에 없으면 추가
+if (!in_array($pid, $recentViewed)) {
+    // 배열의 길이가 3 이상이면 가장 오래된 항목 제거
+    if (count($recentViewed) >= 3) {
+        array_shift($recentViewed);
+    }
+    $recentViewed[] = $pid;
+}
+
+// 쿠키 설정
+setcookie('recent_viewed', json_encode($recentViewed), time() + 86400, '/');
+
 
 // 상품기본정보 조회 $sql1, $result1 $rs
 $sql1 ="SELECT * FROM products WHERE pid={$pid}";
@@ -427,8 +449,8 @@ while ($rs3 = $result3->fetch_object()) {
         $('.quantity span').click(function(){
             calcTotal();
         });
-        let target = $('.widget-desc input[type="radio"]:checked');
         function calcTotal(){
+            let target = $('.widget-desc input[type="radio"]:checked');
             let optprice = Number(target.attr('data-value')) ;
             let qty = Number($('#qty').val());
             console.log(optprice, qty);
@@ -439,24 +461,28 @@ while ($rs3 = $result3->fetch_object()) {
         $('.cart').on('submit', function(e) {
             e.preventDefault();
             //상품코드, 옵션명, 수량
-            
-            let pid = <?=$pid;?>
+            let target = $('.widget-desc input[type="radio"]:checked');
+            let pid = <?=$pid;?>;
             let optname = target.attr('data-name')
             let qty = Number($('#qty').val())
+
             let data = {
                 pid : pid,
                 optname : optname,
                 qty : qty
             }
+            console.log(data)
             $.ajax({
                 url :'cart_insert.php',
+                type:'POST',
                 async : false,
                 data : data,
-                dataTyle : 'json',
+                dataType : 'json',
                 error: function(){
 
                 },
-                sucess : function(data) {
+                success : function(data) {
+                    // console.log('d',data);
                     if(data.result = 'ok') {
                         alert('장바구니 상품을 담았습니다.');
                     } else {
