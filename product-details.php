@@ -151,6 +151,7 @@ while ($rs3 = $result3->fetch_object()) {
                                     <table>
                                         <thead>
                                             <tr>
+                                                <th>선택</th>
                                                 <th>옵션명</th>
                                                 <th>재고</th>
                                                 <th>가격</th>
@@ -161,11 +162,10 @@ while ($rs3 = $result3->fetch_object()) {
                                             <?php
                                                 if(isset($optArr)) {
                                                     foreach($optArr as $oa){
-                                                    
                                             ?>
-
                                             <tr>
-                                                <td><?=$oa->cate?></td>
+                                                <td><input type="radio" name="option1" id="option1_<?=$oa->poid;?>" value="<?=$oa->poid;?>" data-value="<?=$oa->option_price?>" data-name="<?=$oa->option_name;?>" ></td>
+                                                <td><label for="option1_<?=$oa->poid;?>"><?=$oa->cate?></label></td>
                                                 <td><?=$oa->option_cnt?></td>
                                                 <td><?=$oa->option_price?></td>
                                                 <td>
@@ -180,7 +180,6 @@ while ($rs3 = $result3->fetch_object()) {
                                     </table>
                                 </div>
                             </div>
-
                             <!-- Add to Cart Form -->
                             <form class="cart clearfix mb-50 d-flex" method="post">
                                 <div class="quantity">
@@ -190,7 +189,11 @@ while ($rs3 = $result3->fetch_object()) {
                                 </div>
                                 <button type="submit" name="addtocart" value="5" class="btn cart-submit d-block">Add to cart</button>
                             </form>
-
+                            <div>
+                                <h6 class="widget-title total">Total : <span><?=$rs->price
+                                
+                                ?></span></h6>
+                            </div>
                             <div id="accordion" role="tablist">
                                 <div class="card">
                                     <div class="card-header" role="tab" id="headingOne">
@@ -416,7 +419,55 @@ while ($rs3 = $result3->fetch_object()) {
                 </div>
             </div>
         </section>
+<script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+        $('.widget-desc input[type="radio"]').change(function(){
+            calcTotal();
+        });
+        $('.quantity span').click(function(){
+            calcTotal();
+        });
+        let target = $('.widget-desc input[type="radio"]:checked');
+        function calcTotal(){
+            let optprice = Number(target.attr('data-value')) ;
+            let qty = Number($('#qty').val());
+            console.log(optprice, qty);
 
+            let total = optprice * qty;
+            $('.total span').text(total);
+        }
+        $('.cart').on('submit', function(e) {
+            e.preventDefault();
+            //상품코드, 옵션명, 수량
+            
+            let pid = <?=$pid;?>
+            let optname = target.attr('data-name')
+            let qty = Number($('#qty').val())
+            let data = {
+                pid : pid,
+                optname : optname,
+                qty : qty
+            }
+            $.ajax({
+                url :'cart_insert.php',
+                async : false,
+                data : data,
+                dataTyle : 'json',
+                error: function(){
+
+                },
+                sucess : function(data) {
+                    if(data.result = 'ok') {
+                        alert('장바구니 상품을 담았습니다.');
+                    } else {
+                        alert('담기 실패, 다시 시도하세요..');
+
+                    }
+                }
+            })
+        })
+    });
+</script>
 
 <?php
 include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/tail.php';
