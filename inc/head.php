@@ -1,4 +1,5 @@
 <?php
+session_start();
 include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/dbcon.php';
 
 if(isset($_COOKIE['recent_viewed'])){
@@ -12,6 +13,16 @@ if(isset($_COOKIE['recent_viewed'])){
     }
     // print_r($rva);
 }
+$ssid =session_id();
+$cartSql = "SELECT p.thumbnail, p.pid, p.price, p.name, c.cnt, c.options, c.total FROM products p join cart c on p.pid=c.pid WHERE c.ssid='{$ssid}'";
+
+
+// echo $cartSql;
+$cartResult = $mysqli->query($cartSql);
+while ($row = $cartResult->fetch_object()){
+    $cartArr[] =$row;
+}
+
 
 ?>
 
@@ -140,7 +151,6 @@ if(isset($_COOKIE['recent_viewed'])){
                                                     <h6><a href="/pinkping/product-details.php?pid=<?=$item->pid?>"><?= $item->name?></a></h6>
                                                     <h6><?= $item->price?></h6>
                                                 </div>
-
                                             </li>
                                             <?php
                                             }}
@@ -156,34 +166,32 @@ if(isset($_COOKIE['recent_viewed'])){
                                 <!-- Cart & Menu Area -->
                                 <div class="header-cart-menu d-flex align-items-center ml-auto">
                                     <!-- Cart Area -->
+                                    
                                     <div class="cart">
-                                        <a href="#" id="header-cart-btn" target="_blank"><span
-                                                class="cart_quantity">2</span> <i class="ti-bag"></i> Your Bag $20</a>
+                                        <a href="#" id="header-cart-btn" target="_blank">
+                                        <?php if (isset($cartArr)) {  ?>    
+                                        <span
+                                                class="cart_quantity"><?=count($cartArr);?></span>
+                                                <?php } ?>
+                                                <i class="ti-bag"></i> Your Bag $20</a>
                                         <!-- Cart List Area Start -->
                                         <ul class="cart-list">
+                                            <?php
+                                            if (isset($cartArr)){
+                                                foreach($cartArr as $ca) {
+                                            ?>
                                             <li>
-                                                <a href="#" class="image"><img src="img/product-img/product-10.jpg"
+                                                <a href="pinkping/product-details.php?pid=<?=$ca->pid?>" class="image"><img src="<?=$ca->thumbnail?>"
                                                         class="cart-thumb" alt=""></a>
                                                 <div class="cart-item-desc">
-                                                    <h6><a href="#">Women's Fashion</a></h6>
-                                                    <p>1x - <span class="price">$10</span></p>
+                                                    <h6><a href="pinkping/product-details.php?pid=<?=$ca->pid;?>"><?=$ca->name?></a></h6>
+                                                    <p><?=$ca->options?> x <span class="price"><?=$ca->cnt?></span></p>
                                                 </div>
                                                 <span class="dropdown-product-remove"><i class="icon-cross"></i></span>
                                             </li>
-                                            <li>
-                                                <a href="#" class="image"><img src="img/product-img/product-11.jpg"
-                                                        class="cart-thumb" alt=""></a>
-                                                <div class="cart-item-desc">
-                                                    <h6><a href="#">Women's Fashion</a></h6>
-                                                    <p>1x - <span class="price">$10</span></p>
-                                                </div>
-                                                <span class="dropdown-product-remove"><i class="icon-cross"></i></span>
-                                            </li>
-                                            <li class="total">
-                                                <span class="pull-right">Total: $20.00</span>
-                                                <a href="cart.php" class="btn btn-sm btn-cart">Cart</a>
-                                                <a href="checkout-1.html" class="btn btn-sm btn-checkout">Checkout</a>
-                                            </li>
+                                            <?php
+                                            }}
+                                            ?>
                                         </ul>
                                     </div>
                                     <div class="header-right-side-menu ml-15">

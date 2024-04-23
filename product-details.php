@@ -1,83 +1,59 @@
 <?php
-
-ob_start(); //output buffering start
-/*
-ob_start()
-
-"output buffering start → 출력 버퍼링 시작"
-출력 버퍼링은 출력물이 php에 파싱되어 echo나 print에 의해 브라우저로 출력되는 방법이 일반적인데, 필요에 의해 출력 결과물을 바로 브라우저로 보내지 않고, 내용물을 잠깐 동안 버퍼에 보관해 두었다가 출력이 필요할 곳에 이를 사용할 수 있다.
-(화면에 내용을 출력하기 전에 상품 정보를 쿠키에 담기 위해)
- */
-
-session_start();
+ob_start(); 
 $title = 'Product Detail';
 include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/head.php';
-$ssid = session_id();
+
+// $ssid = session_id();
 // echo $ssid;
-// setcookie('recent_viewed', '17,15', time()+86400);   // 쿠키가 24시간 지속됨
-// print_r(json_encode($_COOKIE['recent_viewed']));
-// print_r(json_decode($_COOKIE['recent_viewed']));
 
-
-// $pid = $_GET['pid'];
-// $rvcArr=[];
-// if(isset($_COOKIE['recent_viewed'])) {  // 쿠키가 존재할 때 !false == true
-//     $rvcArr = json_decode($_COOKIE['recent_viewed']);  // string -> array
-//     // $rvcArr = explode(",", $rvc);
-//     if (!in_array($pid, $rvcArr)) { // 이미 본 상품이 아니라면
-//         if(count($rvcArr) >= 3){
-//             array_shift($rvcArr);
-//         }
-//         array_push($rvcArr, $pid);
-//         $rbcStr = json_encode($rvcArr);
-//         setcookie('recent_viewed', $rbcStr, time()+86400, "/");   // 쿠키가 24시간 지속됨
-//     } 
-
-// } else {
-//     array_push($rvcArr, $pid);
-//     $rbcStr = json_encode($rvcArr);
-//     setcookie('recent_viewed', $rbcStr, time()+86400, "/");   // 쿠키가 24시간 지속됨
-// }
+//setcookie('recent_viewed', [12,17,5] , time()+86400);   // 쿠키가 24시간 지속됨.
+//setcookie('recent_viewed', '17,15' , time()+86400);   // 쿠키가 24시간 지속됨.
+//echo json_encode($_COOKIE['recent_viewed']);  //17%2C15 -> "17,15"
+//var_dump(json_decode("17,15")); // "17,15" -> 17%2C15
 $pid = $_GET['pid'];
-$recentViewed = [];
 
-// 쿠키가 존재하면 디코딩하여 배열로 변환
-if (isset($_COOKIE['recent_viewed'])) {
-    $recentViewed = json_decode($_COOKIE['recent_viewed'], true);
+$rvcArr = [];
+
+if(isset($_COOKIE['recent_viewed'])){
+    $rvcArr = json_decode($_COOKIE['recent_viewed']);//string -> array
+    if(!in_array($pid, $rvcArr)){//이미 본 상품이 아니라면
+        //본상품이 3개 이상이라면, 첫상품을 제거
+        if(sizeof($rvcArr) >= 3){
+            array_shift($rvcArr);
+            //unset($rvcArr[0]);
+            //$rvcArr = array_values($rvcArr); //인덱스 재정렬
+            //ksort($rvcArr);  abc, 가나다 순으로 재정렬
+        }
+        array_push($rvcArr, $pid); //배열에 마지막에 추가
+        $rvcStr = json_encode($rvcArr);//[12,17,5] -> '[12,17,5]'
+        setcookie('recent_viewed', $rvcStr, time()+86400, "/");
+    } 
+} else {
+    array_push($rvcArr, $pid); //배열에 마지막에 추가
+    $rvcStr = json_encode($rvcArr);//[12,17,5] -> '[12,17,5]'
+    setcookie('recent_viewed', $rvcStr, time()+86400, "/");
 }
-
-// 최근 본 상품 ID가 배열에 없으면 추가
-if (!in_array($pid, $recentViewed)) {
-    // 배열의 길이가 3 이상이면 가장 오래된 항목 제거
-    if (count($recentViewed) >= 3) {
-        array_shift($recentViewed);
-    }
-    $recentViewed[] = $pid;
-}
-
-// 쿠키 설정
-setcookie('recent_viewed', json_encode($recentViewed), time() + 86400, '/');
-
-
-// 상품기본정보 조회 $sql1, $result1 $rs
-$sql1 ="SELECT * FROM products WHERE pid={$pid}";
-$result1 = $mysqli->query($sql1);
+//상품기본정보 조회 $sql1, $result1, $rs
+$sql1 = "SELECT * FROM products WHERE pid = {$pid}";
+$result1 = $mysqli -> query($sql1);
 $rs = $result1->fetch_object();
 
-// 추가이미지 조회 $sql2, $result2, $addedImgs
-$sql2 = "SELECT * FROM product_image_table WHERE pid={$pid}";
-$result2 = $mysqli->query($sql2);
-while ($rs2 = $result2->fetch_object()) {
-    $addedImgs[] = $rs2;
-}
+//추가이미지 조회 $sql2, $result2, $addedImgs
+$sql2 = "SELECT * FROM product_image_table WHERE pid = {$pid}";
+$result2 = $mysqli -> query($sql2);
+while($row = $result2->fetch_object()){
+    $addedImgs[] = $row;
+};
 
-// 옵션 조회 $sql3, $result3, $optArr
-$sql3 = "SELECT * FROM product_options WHERE pid={$pid}";
-$result3 = $mysqli->query($sql3);
-while ($rs3 = $result3->fetch_object()) {
-    $optArr[] = $rs3;
-}
+//옵션 조회  $sql3, $result3, $optArr
+$sql3 = "SELECT * FROM product_options WHERE pid = {$pid}";
+$result3 = $mysqli -> query($sql3);
+while($row = $result3->fetch_object()){
+    $optArr[] = $row;
+};
+
 ?>
+
         <!-- <<<<<<<<<<<<<<<<<<<< Breadcumb Area Start <<<<<<<<<<<<<<<<<<<< -->
         <div class="breadcumb_area">
             <div class="container">
@@ -103,43 +79,49 @@ while ($rs3 = $result3->fetch_object()) {
 
                     <div class="col-12 col-md-6">
                         <div class="single_product_thumb">
-                            <div id="product_details_slider" class="carousel slide" data-ride="carousel">
+                                <div id="product_details_slider" class="carousel slide" data-ride="carousel">
 
                                 <ol class="carousel-indicators">
-                                    <li class="active" data-target="#product_details_slider" data-slide-to="0" style="background-image: url(<?= $rs->thumbnail?>);">
+
+                                    <li class="active" data-target="#product_details_slider" data-slide-to="0" style="background-image: url(<?= $rs -> thumbnail; ?>);">
                                     </li>
                                     <?php
-                                    if (isset( $addedImgs)) {
+                                    if(isset($addedImgs)){
                                         $i=1;
-                                        foreach($addedImgs as $ai) {
-                                            
-                                    ?>
-                                    <li data-target="#product_details_slider" data-slide-to="<?=$i?>" style="background-image: url('/pinkping/admin/upload/<?= $ai->filename;?>');">
+                                        foreach($addedImgs as $ai){
+                                    ?>  
+                                    <li class="" data-target="#product_details_slider" data-slide-to="<?= $i;?>" style="background-image: url('/pinkping/admin/upload/<?= $ai -> filename; ?>');">
                                     </li>
                                     <?php
                                         $i++;
-                                        }}
+                                        }
+                                    }
                                     ?>
-                                </ol> 
+
+                                    
+                                </ol>
 
                                 <div class="carousel-inner">
+
                                     <div class="carousel-item active">
-                                        <a class="gallery_img" href="<?= $rs->thumbnail;?>">
-                                        <img class="d-block w-100" src="<?= $rs->thumbnail;?>" alt="First slide">
-                                    </a>
+                                        <a class="gallery_img" href="<?= $rs -> thumbnail; ?>">
+                                        <img class="d-block w-100" src="<?= $rs -> thumbnail; ?>" alt="First slide">
+                                        </a>
                                     </div>
                                     <?php
-                                    if (isset( $addedImgs)) {
-                                        foreach($addedImgs as $ai) {
+                                    if(isset($addedImgs)){                                       
+                                        foreach($addedImgs as $ai){
                                     ?>
-                                        <div class="carousel-item ">
-                                            <a class="gallery_img" href="/pinkping/admin/upload/<?=$ai->filename;?>">
-                                            <img class="d-block w-100" src="/pinkping/admin/upload/<?= $ai->filename;?>" alt="slide">
+                                    <div class="carousel-item">
+                                        <a class="gallery_img" href="/pinkping/admin/upload/<?= $ai -> filename; ?>">
+                                        <img class="d-block w-100" src="/pinkping/admin/upload/<?= $ai -> filename; ?>" alt="slide">
                                         </a>
-                                        </div>
-                                    <?php
-                                        }}
-                                    ?>
+                                    </div>
+                                    <?php                                        
+                                        }
+                                    }
+                                    ?> 
+                                   
                                 </div>
                             </div>
                         </div>
@@ -148,9 +130,9 @@ while ($rs3 = $result3->fetch_object()) {
                     <div class="col-12 col-md-6">
                         <div class="single_product_desc">
 
-                            <h4 class="title"><a href="#"><?=$rs->name?></a></h4>
+                            <h4 class="title"><a href="#"><?= $rs -> name; ?></a></h4>
 
-                            <h4 class="price"><?=$rs->price?></h4>
+                            <h4 class="price"><?= $rs -> price; ?></h4>
 
                             <p class="available">Available: <span class="text-muted">In Stock</span></p>
 
@@ -163,11 +145,12 @@ while ($rs3 = $result3->fetch_object()) {
                             </div>
 
                             <div class="widget size mb-50">
-                                <h6 class="widget-title"><?php
-                                if(isset($optArr[0])){
-                                    echo $optArr[0]->cate;
-                                }
-                                ?>
+                                <h6 class="widget-title">
+                                    <?php 
+                                    if(isset($optArr[0])){
+                                        echo $optArr[0]->cate;
+                                    }  
+                                    ?>
                                 </h6>
                                 <div class="widget-desc">
                                     <table>
@@ -182,26 +165,25 @@ while ($rs3 = $result3->fetch_object()) {
                                         </thead>
                                         <tbody>
                                             <?php
-                                                if(isset($optArr)) {
-                                                    foreach($optArr as $oa){
-                                            ?>
+                                             if(isset($optArr)){
+                                                foreach($optArr as $oa){
+                                            ?>   
                                             <tr>
-                                                <td><input type="radio" name="option1" id="option1_<?=$oa->poid;?>" value="<?=$oa->poid;?>" data-value="<?=$oa->option_price?>" data-name="<?=$oa->option_name;?>" ></td>
-                                                <td><label for="option1_<?=$oa->poid;?>"><?=$oa->cate?></label></td>
-                                                <td><?=$oa->option_cnt?></td>
-                                                <td><?=$oa->option_price?></td>
-                                                <td>
-                                                    <img src="<?=$oa->image_url?>" alt="">
-                                                </td>
+                                                <td><input type="radio" name="option1" data-value="<?= $oa -> option_price;?>" data-name="<?= $oa -> option_name;?>" id="option1_<?= $oa -> poid; ?>" value="<?= $oa -> poid; ?>"></td>
+                                                <td><label for="option1_<?= $oa -> poid; ?>"><?= $oa -> option_name;?></label></td>
+                                                <td><?= $oa -> option_cnt;?></td>
+                                                <td><?= $oa -> option_price;?></td>
+                                                <td><img src="<?= $oa -> image_url;?>" alt=""></td>
                                             </tr>
-                                            <?php
+                                            <?php     
                                                 }
-                                            }
+                                             }
                                             ?>
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
+                                         
                             <!-- Add to Cart Form -->
                             <form class="cart clearfix mb-50 d-flex" method="post">
                                 <div class="quantity">
@@ -212,10 +194,9 @@ while ($rs3 = $result3->fetch_object()) {
                                 <button type="submit" name="addtocart" value="5" class="btn cart-submit d-block">Add to cart</button>
                             </form>
                             <div>
-                                <h6 class="widget-title total">Total : <span><?=$rs->price
-                                
-                                ?></span></h6>
-                            </div>
+                                <h6 class="widget-title total" id="subtotal">Total : <span><?= $rs -> price; ?></span></h6>
+                            </div>    
+
                             <div id="accordion" role="tablist">
                                 <div class="card">
                                     <div class="card-header" role="tab" id="headingOne">
@@ -226,7 +207,7 @@ while ($rs3 = $result3->fetch_object()) {
 
                                     <div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne" data-parent="#accordion">
                                         <div class="card-body">
-                                            <?=$rs->content?>
+                                            <?= $rs -> content; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -449,52 +430,60 @@ while ($rs3 = $result3->fetch_object()) {
         $('.quantity span').click(function(){
             calcTotal();
         });
+        
         function calcTotal(){
             let target = $('.widget-desc input[type="radio"]:checked');
-            let optprice = Number(target.attr('data-value')) ;
             let qty = Number($('#qty').val());
-            console.log(optprice, qty);
-
-            let total = optprice * qty;
-            $('.total span').text(total);
+            let product_price = Number($('.single_product_desc .price').text());
+            let total = 0;
+            if(target.length > 0){
+                let optprice = Number(target.attr('data-value')) ;     
+                total = optprice * qty;
+            }else{
+                total = product_price * qty;
+            }            
+            $('#subtotal span').text(total);
         }
-        $('.cart').on('submit', function(e) {
+        $('.cart').on('submit', function(e){
+            
             e.preventDefault();
             //상품코드, 옵션명, 수량
             let target = $('.widget-desc input[type="radio"]:checked');
-            let pid = <?=$pid;?>;
-            let optname = target.attr('data-name')
-            let qty = Number($('#qty').val())
+            let pid = <?= $pid; ?>;            
+            let optname = target.attr('data-name');
+            let qty = Number($('#qty').val());
+            let total = Number($('#subtotal span').text());
 
             let data = {
                 pid : pid,
-                optname : optname,
-                qty : qty
+                optname: optname,
+                qty :qty,
+                total:total
             }
-            console.log(data)
+            console.log(data);
+
             $.ajax({
-                url :'cart_insert.php',
-                type:'POST',
-                async : false,
-                data : data,
-                dataType : 'json',
-                error: function(){
-
-                },
-                success : function(data) {
-                    // console.log('d',data);
-                    if(data.result = 'ok') {
-                        alert('장바구니 상품을 담았습니다.');
-                    } else {
-                        alert('담기 실패, 다시 시도하세요..');
-
+                 url:'cart_insert.php',
+                 async:false,
+                 type: 'POST',
+                 data:data,
+                 dataType:'json',
+                 error:function(){},
+                 success:function(data){
+                    console.log(data);
+                    if(data.result=='ok'){
+                        alert('장바구니에 상품을 담았습니다.');                        
+                    }else{
+                        alert('담기 실패, 다시 시도하세요');                        
                     }
-                }
-            })
-        })
+                 }
+            });
+
+        });
+
     });
 </script>
-
 <?php
+
 include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/tail.php';
 ?>

@@ -3,8 +3,10 @@ session_start();
 include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/dbcon.php';
 
 $pid = $_POST['pid'];
-$optname = $_POST['optname'];
+$optname = $_POST['optname'] ?? '';
 $qty =  $_POST['qty'];
+$total =  $_POST['total'];
+
 if(isset($_SESSION['UID'])){
     $userid = $_SESSION['UID'];
 } else {
@@ -13,12 +15,13 @@ if(isset($_SESSION['UID'])){
 }
 //pid	userid	ssid	options	cnt	regdate	
 
-$sql = "INSERT INTO cart (pid,userid,ssid,options,cnt,regdate) VALUES (
+$sql = "INSERT INTO cart (pid,userid,ssid,options,cnt,total,regdate) VALUES (
     {$pid},
     '{$userid}',
     '{$ssid}',
     '{$optname}',
     '{$qty}',
+    '{$total}',
     now()
 )";
 
