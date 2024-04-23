@@ -14,7 +14,7 @@ if(isset($_COOKIE['recent_viewed'])){
     // print_r($rva);
 }
 $ssid =session_id();
-$cartSql = "SELECT p.thumbnail, p.pid, p.price, p.name, c.cnt, c.options, c.total FROM products p join cart c on p.pid=c.pid WHERE c.ssid='{$ssid}'";
+$cartSql = "SELECT p.thumbnail, p.pid, p.name, p.price, c.cartid, c.cnt, c.options, c.total FROM products p join cart c on p.pid=c.pid WHERE c.ssid='{$ssid}'";
 
 
 // echo $cartSql;

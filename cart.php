@@ -11,6 +11,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/head.php';
                 <div class="row">
                     <div class="col-12">
                         <div class="cart-table clearfix">
+                          <form action="#" id="cartTable">
                             <table class="table table-responsive">
                                 <thead>
                                     <tr>
@@ -21,45 +22,49 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/head.php';
                                     </tr>
                                 </thead>
                                 <tbody>
-                                  <?php
-                                  if(isset($cartArr)) {
-                                    foreach($cartArr as $ci) {
-                                  
-                                  ?>
+                                    <?php
+                                        if(isset($cartArr)){
+                                            foreach($cartArr as $ca){
+                                    ?>
+
                                     <tr>
                                         <td class="cart_product_img d-flex align-items-center">
-                                            <a href="#"><img src="<?=$ci->thumbnail?>" alt="<?=$ci->name?>"></a>
-                                            <h6><?=$ci->name?></h6>
+                                            <a href="#"><img src="<?= $ca-> thumbnail; ?>" alt="<?= $ca-> name; ?>"></a>
+                                            <h6>Yellow Cocktail Dress</h6>
                                         </td>
-                                        <td class="price"><span><?=$ci->price?></span></td>
+                                        <td class="price"><span><?= $ca-> price; ?></span></td>
                                         <td class="qty">
                                             <div class="quantity">
                                                 <span class="qty-minus"
-                                                    onclick="var effect = document.getElementById('qty'); var qty = effect.value; if( !isNaN( qty ) &amp;&amp; qty &gt; 1 ) effect.value--;return false;"><i
+                                                    onclick="var effect = document.getElementById('qty-<?= $ca -> cartid;?>'); var qty = effect.value; if( !isNaN( qty ) &amp;&amp; qty &gt; 1 ) effect.value--;return false;"><i
                                                         class="fa fa-minus" aria-hidden="true"></i></span>
-                                                <input type="number" class="qty-text" id="qty" step="1" min="1" max="99"
-                                                    name="quantity" value="<?=$ci->cnt?>">
+                                                <input type="number" class="qty-text" data-id="<?= $ca -> cartid;?>" id="qty-<?= $ca -> cartid;?>" step="1" min="1" max="99"
+                                                    name="qty[-<?= $ca -> cartid;?>]" value="<?= $ca-> cnt; ?>">
                                                 <span class="qty-plus"
-                                                    onclick="var effect = document.getElementById('qty'); var qty = effect.value; if( !isNaN( qty )) effect.value++;return false;"><i
+                                                    onclick="var effect = document.getElementById('qty-<?= $ca -> cartid;?>'); var qty = effect.value; if( !isNaN( qty )) effect.value++;return false;"><i
                                                         class="fa fa-plus" aria-hidden="true"></i></span>
                                             </div>
                                         </td>
-                                        <td class="total_price"><span><?=$ci->total?></span><button class="cart_item_del"> x
-                                            </button></td>
+                                        <td class="total_price"><span></span><button class="cart_item_del"> x
+                                            </button>
+                                        </td>
                                     </tr>
-                                  <?php
-                                  }}
-                                  ?>
+
+                                    <?php         
+                                            }
+                                        }
+                                    ?>                                    
                                 </tbody>
-                            </table>
+                          </table>
+                          </form>
                         </div>
                         <div class="cart-footer d-flex mt-30">
                             <div class="back-to-shop w-50">
                                 <a href="shop-grid-left-sidebar.html">Continue shooping</a>
                             </div>
                             <div class="update-checkout w-50 text-right">
-                                <a href="#">clear cart</a>
-                                <a href="#">Update cart</a>
+                                <a href="#" id="clearCart">clear cart</a>
+                                <a href="#" id="updateCart">Update cart</a>
                             </div>
                         </div>
 
@@ -113,9 +118,9 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/head.php';
                             </div>
 
                             <ul class="cart-total-chart">
-                                <li><span>Subtotal</span> <span>$59.90</span></li>
+                                <li><span>Subtotal</span> <span id="subtotal">$59.90</span></li>
                                 <li><span>Shipping</span> <span>Free</span></li>
-                                <li><span><strong>Total</strong></span> <span><strong>$59.90</strong></span></li>
+                                <li><span><strong>Total</strong></span> <span><strong id="grandtotal">$59.90</strong></span></li>
                             </ul>
                             <a href="checkout.html" class="btn karl-checkout-btn">Proceed to checkout</a>
                         </div>
@@ -124,7 +129,91 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/head.php';
             </div>
         </div>
         <!-- ****** Cart Area End ****** -->
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+    $('.quantity span').click(function(){
+        calcTotal();
+    });
+    $('.cart_item_del').click(function(){
+        $(this).closest('tr').remove();
+        calcTotal();
+        let cartid =  $(this).closest('tr').find('.qty-text').attr('data-id');
+        let data = {
+            cartid :cartid
+        }
+        $.ajax({
+            url:'cart_del.php',
+            async:false,
+            type: 'POST',
+            data:data,
+            dataType:'json',
+            error:function(){},
+            success:function(data){
+            console.log(data);
+            if(data.result=='ok'){
+                alert('장바구니가 업데이트 되었습니다');                        
+            }else{
+                alert('오류, 다시 시도하세요');                        
+                }
+            }
+        });
+    })
 
+    function calcTotal(){
+        let cartItem = $('.cart-table tbody tr');
+        let subtotal = 0;
+        cartItem.each(function(){
+            let price = Number($(this).find('.price span').text());
+            let qty =  Number($(this).find('.qty-text').val());
+            let total_price = $(this).find('.total_price span');
+            total_price.text(price*qty);
+            subtotal = subtotal+(price * qty);
+        });
+        $('#subtotal').text(subtotal);
+
+    }
+    calcTotal();
+
+    //카트 일괄 업데이트
+
+    $('#updateCart').click(function(e) {
+      e.preventDefault();
+      let cartItem = $('.cart-table tbody tr');
+      let cartIdArr = []
+      let qtyArr = []
+      cartItem.each(function(){
+        let cartid = Number($(this).find('.qty-text').attr('data-id'))
+        cartIdArr.push(cartid)
+
+        let qty = Number($(this).find('.qty-text').val())
+        qtyArr.push(qty)
+      })
+      
+      data = {
+        cartid:cartIdArr,
+        qty:qtyArr
+      }
+      console.log('test',data)
+      $.ajax({
+        url : 'cart_update.php',
+        async : false,
+        type :'POST',
+        data : data,
+        dataType:'json',
+        error: function(){},
+        success:function(data){
+          console.log(data);
+          if(data.result=='ok'){
+              alert('장바구니를 업데이트했습니다.');                        
+          }else{
+              alert('담기 실패, 다시 시도하세요');                        
+          }
+        }
+      })
+
+    });
+});    
+</script>
 <?php
 include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/tail.php';
 ?>

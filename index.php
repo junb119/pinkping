@@ -10,18 +10,18 @@ while($row = $result->fetch_object()){
     $rsc[] = $row;
 }
 
-// 메인상품 카테고리명, 코드 출력
+//메인상품 카테고리명, 코드 출력
 $sql = "SELECT c.name, c.code
-FROM products p 
-JOIN category c 
-ON p.cate LIKE CONCAT('%', c.code, '%')
-WHERE ismain = 1 AND status = 1
-GROUP BY c.name";
+FROM products p
+JOIN category c ON p.cate LIKE CONCAT('%', c.code, '%')
+WHERE p.ismain = 1 AND p.status = 1
+GROUP BY c.name, c.code";
 
-$result = $mysqli->query($sql);
+$result = $mysqli -> query($sql);
 while($rs = $result->fetch_object()){
     $resultArr[] = $rs;
 }
+//print_r($resultArr);
 ?>
 
 
@@ -207,12 +207,12 @@ while($rs = $result->fetch_object()){
                 <div class="text-center portfolio-menu">
                     <button class="btn active" data-filter="*">ALL</button>
                     <?php
-                    foreach($resultArr as $ra){
+                        foreach($resultArr as $ra){
                     ?>
-                      <button class="btn" data-filter=".<?=$ra->code;?>"><?=$ra->name;?></button>
-                    <?php
-                    }
-                    ?>                    
+                        <button class="btn" data-filter=".<?= $ra->code; ?>"><?= $ra->name; ?></button>
+                    <?php        
+                        }
+                    ?>
                 </div>
             </div>
 
@@ -221,20 +221,19 @@ while($rs = $result->fetch_object()){
                     <?php
                     if(isset($rsc)){
                         foreach($rsc as $item){
-                          $codeArr = str_split($item->cate, 5);
-                          $code = implode(' ', $codeArr);
-                          
-                          // $code ='';
-                          // foreach($codeArr as $c){
-                            // $code .= $c.' ';
-                          // }
+                        $codeArr = str_split($item->cate,5);
+                        $code = '';
+                        foreach($codeArr as $c){
+                            $code .= $c.' ';
+                        }
+                        //$code = substr($item->cate, -5);
                     ?>
                     <!-- Single gallery Item Start -->
-                    <div class="col-12 col-sm-6 col-md-4 single_gallery_item <?=$code;?> wow fadeInUpBig"
+                    <div class="col-12 col-sm-6 col-md-4 single_gallery_item <?= $code; ?> wow fadeInUpBig"
                         data-wow-delay="0.2s">
                         <!-- Product Image -->
                         <div class="product-img">
-                            <a href="product-details.php?pid=<?=$item->pid?>"><img src="<?= $item->thumbnail; ?>" alt=""></a>
+                            <a href="product-details.php?pid=<?= $item->pid; ?>"><img src="<?= $item->thumbnail; ?>" alt=""></a>
                             <div class="product-quicview">
                                 <a href="#" data-toggle="modal" data-target="#quickview"><i class="ti-plus"></i></a>
                             </div>
@@ -242,7 +241,7 @@ while($rs = $result->fetch_object()){
                         <!-- Product Description -->
                         <div class="product-description">
                             <h4 class="product-price"><?= $item->price; ?></h4>
-                            <a href="product-details.php?pid=<?=$item->pid?>"><p><?= $item->name; ?></p></a>
+                            <p><a href="product-details.php?pid=<?= $item->pid; ?>"><?= $item->name; ?></a></p>
                             <!-- Add to Cart -->
                             <a href="#" class="add-to-cart-btn">ADD TO CART</a>
                         </div>
