@@ -1,4 +1,5 @@
 <?php
+
 $title = 'Cart';
 include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/head.php';
 
@@ -11,59 +12,59 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/head.php';
                 <div class="row">
                     <div class="col-12">
                         <div class="cart-table clearfix">
-                          <form action="#" id="cartTable">
-                            <table class="table table-responsive">
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Price</th>
-                                        <th>Quantity</th>
-                                        <th>Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                        if(isset($cartArr)){
-                                            foreach($cartArr as $ca){
-                                    ?>
+                            <form action="#" id="cartTable">
+                                <table class="table table-responsive">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Price</th>
+                                            <th>Quantity</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                            if(isset($cartArr)){
+                                                foreach($cartArr as $ca){
+                                        ?>
 
-                                    <tr>
-                                        <td class="cart_product_img d-flex align-items-center">
-                                            <a href="#"><img src="<?= $ca-> thumbnail; ?>" alt="<?= $ca-> name; ?>"></a>
-                                            <h6>Yellow Cocktail Dress</h6>
-                                        </td>
-                                        <td class="price"><span><?= $ca-> price; ?></span></td>
-                                        <td class="qty">
-                                            <div class="quantity">
-                                                <span class="qty-minus"
-                                                    onclick="var effect = document.getElementById('qty-<?= $ca -> cartid;?>'); var qty = effect.value; if( !isNaN( qty ) &amp;&amp; qty &gt; 1 ) effect.value--;return false;"><i
-                                                        class="fa fa-minus" aria-hidden="true"></i></span>
-                                                <input type="number" class="qty-text" data-id="<?= $ca -> cartid;?>" id="qty-<?= $ca -> cartid;?>" step="1" min="1" max="99"
-                                                    name="qty[-<?= $ca -> cartid;?>]" value="<?= $ca-> cnt; ?>">
-                                                <span class="qty-plus"
-                                                    onclick="var effect = document.getElementById('qty-<?= $ca -> cartid;?>'); var qty = effect.value; if( !isNaN( qty )) effect.value++;return false;"><i
-                                                        class="fa fa-plus" aria-hidden="true"></i></span>
-                                            </div>
-                                        </td>
-                                        <td class="total_price"><span></span><button class="cart_item_del"> x
-                                            </button>
-                                        </td>
-                                    </tr>
+                                        <tr>
+                                            <td class="cart_product_img d-flex align-items-center">
+                                                <a href="#"><img src="<?= $ca-> thumbnail; ?>" alt="<?= $ca-> name; ?>"></a>
+                                                <h6>Yellow Cocktail Dress</h6>
+                                            </td>
+                                            <td class="price"><span><?= $ca-> price; ?></span></td>
+                                            <td class="qty">
+                                                <div class="quantity">
+                                                    <span class="qty-minus"
+                                                        onclick="var effect = document.getElementById('qty-<?= $ca -> cartid;?>'); var qty = effect.value; if( !isNaN( qty ) &amp;&amp; qty &gt; 1 ) effect.value--;return false;"><i
+                                                            class="fa fa-minus" aria-hidden="true"></i></span>
+                                                    <input type="number" class="qty-text" data-id="<?= $ca -> cartid;?>" id="qty-<?= $ca -> cartid;?>" step="1" min="1" max="99"
+                                                        name="qty[<?= $ca -> cartid;?>]" value="<?= $ca-> cnt; ?>">
+                                                    <span class="qty-plus"
+                                                        onclick="var effect = document.getElementById('qty-<?= $ca -> cartid;?>'); var qty = effect.value; if( !isNaN( qty )) effect.value++;return false;"><i
+                                                            class="fa fa-plus" aria-hidden="true"></i></span>
+                                                </div>
+                                            </td>
+                                            <td class="total_price"><span></span><button class="cart_item_del"> x
+                                                </button>
+                                            </td>
+                                        </tr>
 
-                                    <?php         
+                                        <?php         
+                                                }
                                             }
-                                        }
-                                    ?>                                    
-                                </tbody>
-                          </table>
-                          </form>
+                                        ?>                                    
+                                    </tbody>
+                                </table>
+                            </form>
                         </div>
                         <div class="cart-footer d-flex mt-30">
                             <div class="back-to-shop w-50">
                                 <a href="shop-grid-left-sidebar.html">Continue shooping</a>
                             </div>
                             <div class="update-checkout w-50 text-right">
-                                <a href="#" id="clearCart">clear cart</a>
+                                <a href="cart_clear_ok.php" id="clearCart">clear cart</a>
                                 <a href="#" id="updateCart">Update cart</a>
                             </div>
                         </div>
@@ -78,10 +79,19 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/head.php';
                                 <h5>Cupon code</h5>
                                 <p>Enter your cupone code</p>
                             </div>
+                            <?php
+                            $cSql = "SELECT uc.ucid, c.coupon_name FROM user_coupons uc JOIN coupons c ON c.cid = uc.couponid WHERE uc.userid='{$userid}'";
+                            echo $cSql;
+                            // $result = $mysqli->query($csql);
+                            
+
+                            ?>
                             <form action="#">
-                                <input type="search" name="search" placeholder="#569ab15">
-                                <button type="submit">Apply</button>
-                            </form>
+                                <select class="form-select" aria-label="쿠폰선택" name="coupon" id="coupon">
+                                    <option selected disabled>쿠폰선택</option>                                    
+                                    
+                                </select>
+                          </form>
                         </div>
                     </div>
                     <div class="col-12 col-md-6 col-lg-4">
@@ -175,43 +185,65 @@ document.addEventListener('DOMContentLoaded', ()=>{
     calcTotal();
 
     //카트 일괄 업데이트
+    $('#updateCart').click(function(e){
+        e.preventDefault();
+        let cartItem = $('.cart-table tbody tr');
+        let cartIdArr = [];
+        let qtyArr = [];
 
-    $('#updateCart').click(function(e) {
-      e.preventDefault();
-      let cartItem = $('.cart-table tbody tr');
-      let cartIdArr = []
-      let qtyArr = []
-      cartItem.each(function(){
-        let cartid = Number($(this).find('.qty-text').attr('data-id'))
-        cartIdArr.push(cartid)
+        cartItem.each(function(){
+            let cartid = Number($(this).find('.qty-text').attr('data-id'));
+            cartIdArr.push(cartid);
 
-        let qty = Number($(this).find('.qty-text').val())
-        qtyArr.push(qty)
-      })
-      
-      data = {
-        cartid:cartIdArr,
-        qty:qtyArr
-      }
-      console.log('test',data)
-      $.ajax({
-        url : 'cart_update.php',
-        async : false,
-        type :'POST',
-        data : data,
-        dataType:'json',
-        error: function(){},
-        success:function(data){
-          console.log(data);
-          if(data.result=='ok'){
-              alert('장바구니를 업데이트했습니다.');                        
-          }else{
-              alert('담기 실패, 다시 시도하세요');                        
-          }
+            let qty = Number($(this).find('.qty-text').val());
+            qtyArr.push(qty);
+        })
+        console.log(cartIdArr, qtyArr);
+        data = {
+            cartid:cartIdArr,
+            qty:qtyArr
         }
-      })
+        $.ajax({
+            url:'cart_update.php',
+            async:false,
+            type: 'POST',
+            data:data,
+            dataType:'json',
+            error:function(){},
+            success:function(data){
+            console.log(data);
+            if(data.result=='ok'){
+                alert('장바구니가 업데이트 되었습니다');                        
+            }else{
+                alert('오류, 다시 시도하세요');                        
+                }
+            }
+        });
 
     });
+
+    /*
+    //카트 삭제 업데이트
+    $('#clearCart').click(function(e){
+        e.preventDefault();
+
+        $.ajax({
+            url:'cart_clear.php',
+            async:false,
+            dataType:'json',
+            error:function(){},
+            success:function(data){
+            console.log(data);
+            if(data.result=='ok'){
+                alert('장바구니가 비웠습니다.');     
+                location.reload();                   
+            }else{
+                alert('오류, 다시 시도하세요');                        
+                }
+            }
+        });
+    })
+    */
 });    
 </script>
 <?php

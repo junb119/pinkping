@@ -4,7 +4,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/header.php';
 include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/admin/inc/admin_check.php';
 
 
-$sql = "SELECT c.name, COUNT(p.pid) AS product_count
+$sql = "SELECT c.name, COUNT(p.pid) AS product_count 
 FROM products p 
 JOIN category c 
 ON p.cate LIKE CONCAT('%', c.code, '%')

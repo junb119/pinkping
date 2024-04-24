@@ -5,25 +5,39 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/pinkping/inc/dbcon.php';
 if(isset($_COOKIE['recent_viewed'])){
     $recent_viewed = json_decode($_COOKIE['recent_viewed']);
     $resultString = implode(",", $recent_viewed);
-    
+
     $sql = "SELECT * FROM products WHERE pid in ({$resultString})";
+
     $result = $mysqli -> query($sql);
     while($row = $result ->fetch_object()){
         $rva[] = $row;
     }
-    // print_r($rva);
+    //print_r($rva);
 }
-$ssid =session_id();
-$cartSql = "SELECT p.thumbnail, p.pid, p.name, p.price, c.cartid, c.cnt, c.options, c.total FROM products p join cart c on p.pid=c.pid WHERE c.ssid='{$ssid}'";
-
-
-// echo $cartSql;
-$cartResult = $mysqli->query($cartSql);
-while ($row = $cartResult->fetch_object()){
-    $cartArr[] =$row;
+//장바구니 조회 $cartSql, $cartResult $cartArr, product테이블에서 pid와 일치하는 데이터에서 thumbnail, name
+if(isset($_SESSION['UID'])){
+    $userid = $_SESSION['UID'];
+    $ssid = '';
+} else {
+    $ssid = session_id();
+    $userid = '';
 }
 
 
+// $cartSql = "SELECT * FROM cart WHERE ssid = '{$ssid}'";
+
+$cartSql = "SELECT p.thumbnail,p.name,p.price,c.cartid,c.cnt,c.options,c.total
+            FROM products p
+                INNER JOIN cart c
+                ON c.pid = p.pid
+                WHERE c.ssid = '{$ssid}' or c.userid = '{$userid}'
+";
+
+$cartResult = $mysqli -> query($cartSql);
+while($row = $cartResult->fetch_object()){
+    $cartArr[] = $row;
+}
+//print_r($cartArr);
 ?>
 
 <!DOCTYPE html>
@@ -37,17 +51,20 @@ while ($row = $cartResult->fetch_object()){
     <!-- The above 4 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
     <!-- Title  -->
-    <title><?=$title;?> | Karl - Fashion Ecommerce</title>
+    <title><?= $title ?? ''; ?> | Karl - Fashion Ecommerce</title>
 
     <!-- Favicon  -->
-    <link rel="icon" href="img/core-img/favicon.ico">
+    <link rel="icon" href="/pinkping/img/core-img/favicon.ico">
 
     <!-- Core Style CSS -->
-    <link rel="stylesheet" href="css/core-style.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/pinkping/css/core-style.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" integrity="sha512-jnSuA4Ss2PkkikSOLtYs8BlYIeeIK1h99ty4YfvRPAlzr377vr3CXDb7sb7eEEBYjDtcYj+AjBH3FLv5uSJuXg==" crossorigin="anonymous" referrerpolicy="no-referrer" />    
+    
+    <link rel="stylesheet" href="/pinkping/style.css">
 
     <!-- Responsive CSS -->
-    <link href="css/responsive.css" rel="stylesheet">
+    <link href="/pinkping/css/responsive.css" rel="stylesheet">
 
 </head>
 
@@ -134,66 +151,99 @@ while ($row = $cartResult->fetch_object()){
                             <div class="top_single_area d-flex align-items-center">
                                 <!-- recent view Area -->
                                 <div class="header-cart-menu d-flex align-items-center mr-auto">
+                                    
+                                    
                                     <!-- Cart Area -->
+
                                     <div class="recentview">
                                         <a href="#" id="header-recent-btn" target="_blank"><span
                                                 class="cart_quantity">2</span> <i class="ti-bag"></i> recent viewed</a>
                                         <!-- Cart List Area Start -->
                                         <ul class="recent-list">
-                                            <?php
-                                            if (isset($rva)) {
+                                        <?php
+                                            if(isset($rva)){    
                                                 foreach($rva as $item) {
-                                            ?>
-                                            <li>
-                                                <a href="/pinkping/product-details.php?pid=<?=$item->pid?>" class="image"><img src="<?= $item->thumbnail?>"
-                                                        class="cart-thumb" alt=""></a>
-                                                <div class="cart-item-desc">
-                                                    <h6><a href="/pinkping/product-details.php?pid=<?=$item->pid?>"><?= $item->name?></a></h6>
-                                                    <h6><?= $item->price?></h6>
-                                                </div>
-                                            </li>
-                                            <?php
-                                            }}
-                                            ?>
+                                        ?>
+                                        <li>
+                                            <a href="product-details.php?pid=<?= $item ->pid;?>" class="image"><img src="<?= $item ->thumbnail;?>"
+                                                    class="cart-thumb" alt=""></a>
+                                            <div class="cart-item-desc">
+                                                <h6><a href="product-details.php?pid=<?= $item ->pid;?>"><?= $item ->name;?></a></h6>
+                                                <h6><?= $item ->price;?></h6>
+                                            </div>
+
+                                        </li>
+                                        <?php   
+                                                }                                           
+                                            }
+                                        ?>
+                                            
+
                                         </ul>
                                     </div>
 
                                 </div>
                                 <!-- Logo Area -->
                                 <div class="top_logo">
-                                    <a href="index.php"><img src="img/core-img/logo.png" alt=""></a>
+                                    <a href="index.php"><img src="/pinkping/img/core-img/logo.png" alt=""></a>
                                 </div>
                                 <!-- Cart & Menu Area -->
-                                <div class="header-cart-menu d-flex align-items-center ml-auto">
-                                    <!-- Cart Area -->
+                                <div class="header-cart-menu d-flex align-items-center ml-auto">                                    
+                                
+                                <?php
+                                if (!isset($_SESSION['UID'])) { //없다면
+                                ?>
+                                    <a href="/pinkping/member/login.php">로그인</a>
+                                    <a href="/pinkping/member/signup.php">회원가입</a>
+                                <?php
+                                } else{ //있다면
+                                ?>  
+                                    <a href="/pinkping/member/logout.php">로그아웃</a>
+                                <?php
+                                }
+                                ?>            
+                                    
+
+
+                                    
+                                <!-- Cart Area -->
                                     
                                     <div class="cart">
                                         <a href="#" id="header-cart-btn" target="_blank">
-                                        <?php if (isset($cartArr)) {  ?>    
-                                        <span
-                                                class="cart_quantity"><?=count($cartArr);?></span>
-                                                <?php } ?>
-                                                <i class="ti-bag"></i> Your Bag $20</a>
+                                            <?php if(isset($cartArr)) { ?>
+                                            <span class="cart_quantity"><?= count($cartArr)?></span> 
+                                            <?php } ?>
+                                            <i class="ti-bag"></i> Your Bag $20</a>
                                         <!-- Cart List Area Start -->
                                         <ul class="cart-list">
                                             <?php
-                                            if (isset($cartArr)){
-                                                foreach($cartArr as $ca) {
+                                                if(isset($cartArr)){                              
+                                                foreach($cartArr as $ca){
                                             ?>
-                                            <li>
-                                                <a href="pinkping/product-details.php?pid=<?=$ca->pid?>" class="image"><img src="<?=$ca->thumbnail?>"
-                                                        class="cart-thumb" alt=""></a>
-                                                <div class="cart-item-desc">
-                                                    <h6><a href="pinkping/product-details.php?pid=<?=$ca->pid;?>"><?=$ca->name?></a></h6>
-                                                    <p><?=$ca->options?> x <span class="price"><?=$ca->cnt?></span></p>
-                                                </div>
-                                                <span class="dropdown-product-remove"><i class="icon-cross"></i></span>
+                                                <li>
+                                                    <a href="#" class="image"><img src="<?= $ca -> thumbnail; ?>"
+                                                            class="cart-thumb" alt=""></a>
+                                                    <div class="cart-item-desc">
+                                                        <h6><a href="#"><?= $ca -> name; ?></a></h6>
+                                                        <p><?= $ca -> options; ?> x <span class="price"><?= $ca -> cnt; ?></span></p>
+                                                    </div>
+                                                    <span class="dropdown-product-remove"><i class="icon-cross"></i></span>
+                                                </li>
+
+                                            <?php   
+                                                }   
+                                            }                                           
+                                            ?>
+                                            
+                                            <li class="total">
+                                                <span class="pull-right">Total: $20.00</span>
+                                                <a href="cart.php" class="btn btn-sm btn-cart">Cart</a>
+                                                <a href="checkout-1.html" class="btn btn-sm btn-checkout">Checkout</a>
                                             </li>
-                                            <?php
-                                            }}
-                                            ?>
                                         </ul>
                                     </div>
+                                    
+
                                     <div class="header-right-side-menu ml-15">
                                         <a href="#" id="sideMenuBtn"><i class="ti-menu" aria-hidden="true"></i></a>
                                     </div>

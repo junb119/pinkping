@@ -472,7 +472,8 @@ while($row = $result3->fetch_object()){
                  success:function(data){
                     console.log(data);
                     if(data.result=='ok'){
-                        alert('장바구니에 상품을 담았습니다.');                        
+                        alert('장바구니에 상품을 담았습니다.'); 
+                        location.reload();        
                     }else{
                         alert('담기 실패, 다시 시도하세요');                        
                     }
