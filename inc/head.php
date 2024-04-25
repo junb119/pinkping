@@ -26,7 +26,7 @@ if(isset($_SESSION['UID'])){
 
 // $cartSql = "SELECT * FROM cart WHERE ssid = '{$ssid}'";
 
-$cartSql = "SELECT p.thumbnail,p.name,p.price,c.cartid,c.cnt,c.options,c.total
+$cartSql = "SELECT p.thumbnail,p.name,p.price,p.pid,c.cartid ,c.cnt,c.options,c.total
             FROM products p
                 INNER JOIN cart c
                 ON c.pid = p.pid
